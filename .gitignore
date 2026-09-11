@@ -1,0 +1,35 @@
+# Rust / Soroban build output
+/target/
+contracts/*/target/
+target/
+
+# Compiled contract artifacts committed only via release flow, never ad-hoc
+*.wasm
+
+# Stellar CLI / key material — NEVER commit secrets
+.stellar/
+*.pem
+*.key
+*.secret
+secret-*.json
+
+# Environment files with real credentials
+.env
+.env.*
+!.env.example
+
+# Deployment state with private material (metadata JSON is committed, keys never are)
+deployments/*secret*
+deployments/*key*
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Node (scripts may use npm tooling later)
+node_modules/

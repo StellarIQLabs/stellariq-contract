@@ -1,0 +1,24 @@
+[workspace]
+resolver = "2"
+members = [
+  "contracts/*",
+  "interfaces",
+]
+
+[workspace.dependencies]
+soroban-sdk = "27"
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+# Release with contract logs enabled (debugging only, never for deployment).
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true

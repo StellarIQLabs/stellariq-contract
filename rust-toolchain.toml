@@ -1,0 +1,7 @@
+# StellarIQ contracts require Rust 1.84+ for the `wasm32v1-none` target,
+# the only wasm target supported by the Soroban runtime.
+[toolchain]
+channel = "stable"
+targets = ["wasm32v1-none"]
+components = ["rustc", "cargo"]
+profile = "minimal"
