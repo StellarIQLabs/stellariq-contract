@@ -27,6 +27,8 @@ mod fixture;
 mod test;
 #[cfg(test)]
 mod test_aggregation;
+#[cfg(test)]
+mod test_security;
 
 /// Storage layout.
 ///
