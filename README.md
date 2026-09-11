@@ -47,7 +47,7 @@ stellar contract build
 cargo test
 
 # 3. Deploy (testnet)
-cp .env.example .env   # then set STELLAR_SOURCE_ACCOUNT to a funded testnet identity
+cp .env.example .env   # then set STELLAR_SOURCE_ACCOUNT + ADMIN_ADDRESS
 ./scripts/deploy.sh testnet
 ./scripts/verify.sh testnet
 ```

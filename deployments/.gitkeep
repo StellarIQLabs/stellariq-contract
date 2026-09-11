@@ -1,0 +1,3 @@
+# Deployment metadata lives here, one file per network/contract:
+#   deployments/testnet-router.json
+# Only public metadata (contract ids, hashes, commits). NEVER secrets.
