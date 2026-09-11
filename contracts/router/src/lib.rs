@@ -22,7 +22,11 @@ use stellariq_interfaces::{
 };
 
 #[cfg(test)]
+mod fixture;
+#[cfg(test)]
 mod test;
+#[cfg(test)]
+mod test_aggregation;
 
 /// Storage layout.
 ///

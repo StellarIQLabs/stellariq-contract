@@ -2,104 +2,16 @@
 
 //! Core router tests: lifecycle, authorization, registry, single-hop
 //! execution and every validation failure. Multi-hop aggregation scenarios
-//! and deeper security/event coverage land in Tasks 6–9.
+//! live in `test_aggregation.rs`; security/event coverage lands in Tasks 7–9.
 
+use super::fixture::*;
 use super::*;
 use soroban_sdk::{
     symbol_short,
     testutils::{Address as _, Ledger},
-    token::StellarAssetClient,
     vec as sorovec, Address, Env,
 };
 use stellariq_interfaces::{AdapterError, MAX_HOPS};
-use stellariq_test_adapter::{TestAdapter, TestAdapterClient};
-
-const DEADLINE: u64 = 1_000_000;
-
-struct Fixture {
-    env: Env,
-    admin: Address,
-    trader: Address,
-    router_id: Address,
-    adapter_id: Address,
-    token_a: Address,
-    token_b: Address,
-    token_c: Address,
-    pool: Address,
-}
-
-fn router(f: &Fixture) -> RouterClient<'_> {
-    RouterClient::new(&f.env, &f.router_id)
-}
-
-fn adapter(f: &Fixture) -> TestAdapterClient<'_> {
-    TestAdapterClient::new(&f.env, &f.adapter_id)
-}
-
-fn setup() -> Fixture {
-    let env = Env::default();
-    env.mock_all_auths();
-    env.ledger().set_timestamp(1000);
-
-    let admin = Address::generate(&env);
-    let trader = Address::generate(&env);
-    let router_id = env.register(Router, ());
-    let adapter_id = env.register(TestAdapter, ());
-    let pool = Address::generate(&env);
-
-    let token_a = env
-        .register_stellar_asset_contract_v2(admin.clone())
-        .address();
-    let token_b = env
-        .register_stellar_asset_contract_v2(admin.clone())
-        .address();
-    let token_c = env
-        .register_stellar_asset_contract_v2(admin.clone())
-        .address();
-
-    let client = RouterClient::new(&env, &router_id);
-    client.initialize(&admin);
-
-    let adapter_client = TestAdapterClient::new(&env, &adapter_id);
-    adapter_client.initialize(&admin);
-    client.set_protocol(&symbol_short!("test"), &adapter_id);
-
-    Fixture {
-        env,
-        admin,
-        trader,
-        router_id,
-        adapter_id,
-        token_a,
-        token_b,
-        token_c,
-        pool,
-    }
-}
-
-fn mint(env: &Env, token: &Address, to: &Address, amount: i128) {
-    StellarAssetClient::new(env, token).mint(to, &amount);
-}
-
-fn balance(env: &Env, token: &Address, holder: &Address) -> i128 {
-    TokenClient::new(env, token).balance(holder)
-}
-
-/// Fund a single-hop A->B scenario: trader holds A, adapter holds B.
-fn fund_single_hop(f: &Fixture, trader_a: i128, adapter_b: i128) {
-    mint(&f.env, &f.token_a, &f.trader, trader_a);
-    mint(&f.env, &f.token_b, &f.adapter_id, adapter_b);
-}
-
-fn step(f: &Fixture, token_in: &Address, token_out: &Address, min: i128) -> SwapStep {
-    SwapStep {
-        protocol: symbol_short!("test"),
-        pool: f.pool.clone(),
-        token_in: token_in.clone(),
-        token_out: token_out.clone(),
-        amount_out_min: min,
-    }
-}
 
 // -- Lifecycle ---------------------------------------------------------------
 
