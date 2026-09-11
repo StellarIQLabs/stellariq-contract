@@ -1,0 +1,11 @@
+{
+  "network": "testnet",
+  "contract": "router",
+  "contractId": "CC277AA6E6WZIQRA4N45TQ3O6VV5MUSDMRZCNHO43QENMYXV6E5OVHSP",
+  "wasmSha256": "1a3d03c5775b1ac532559aa89a5e1a5d84c5b46a72d40e13b1b3071c97d1e750",
+  "deployedAt": "2026-09-11T12:24:22Z",
+  "commit": "1d399ebb0d1c0e3438f1cb5e4e83fb71cc73cba6",
+  "version": "0.1.0",
+  "admin": "GCASCW5GJ3364OPCO4R57AXE3OHSBQOIHLFL5RFVWJIIAUQPAZGK42R4",
+  "deployerIdentity": "stellariq-deployer"
+}

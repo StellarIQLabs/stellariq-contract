@@ -37,19 +37,21 @@ if [ -f "$META" ]; then
 fi
 
 invoke() { stellar contract invoke --id "$CONTRACT_ID" --source-account "$SOURCE" --network "$NETWORK" -- "$@"; }
+# Simulation/read-only output quotes strings ("0.1.0", "GABC..."): normalize.
+unquote() { tr -d '"'; }
 
 log "contract: $CONTRACT_ID on $NETWORK"
 
-GOT_VERSION="$(invoke version --is-view 2>/dev/null || invoke version)"
+GOT_VERSION="$(invoke version --is-view 2>/dev/null || invoke version | unquote)"
 log "version() = $GOT_VERSION"
 
-GOT_ADMIN="$(invoke get_admin --is-view 2>/dev/null || invoke get_admin)"
+GOT_ADMIN="$(invoke get_admin --is-view 2>/dev/null || invoke get_admin | unquote)"
 log "get_admin() = $GOT_ADMIN"
 if [ -n "$EXPECTED_ADMIN" ] && [ "$GOT_ADMIN" != "$EXPECTED_ADMIN" ]; then
   fail "admin mismatch: on-chain=$GOT_ADMIN metadata=$EXPECTED_ADMIN"
 fi
 
-GOT_PAUSED="$(invoke is_paused --is-view 2>/dev/null || invoke is_paused)"
+GOT_PAUSED="$(invoke is_paused --is-view 2>/dev/null || invoke is_paused | unquote)"
 log "is_paused() = $GOT_PAUSED"
 [ "$GOT_PAUSED" = "false" ] || fail "router is paused; investigate before use"
 
