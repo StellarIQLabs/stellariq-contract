@@ -20,6 +20,10 @@ enum AdapterKey {
     Rate(Address),
     /// pool -> injected failure flag (simulates a venue rejecting execution)
     Fail(Address),
+    /// pool -> overridden REPORTED output (delivery stays honest).
+    /// Simulates a misreporting adapter: the router must fail closed on
+    /// inflated reports and settle on verified delivery for deflated ones.
+    Misreport(Address),
 }
 
 #[contract]
@@ -63,6 +67,27 @@ impl TestAdapter {
         Ok(())
     }
 
+    pub fn set_misreport(
+        env: Env,
+        admin: Address,
+        pool: Address,
+        reported: i128,
+    ) -> Result<(), AdapterError> {
+        Self::require_admin(&env, &admin)?;
+        env.storage()
+            .instance()
+            .set(&AdapterKey::Misreport(pool), &reported);
+        Ok(())
+    }
+
+    pub fn clear_misreport(env: Env, admin: Address, pool: Address) -> Result<(), AdapterError> {
+        Self::require_admin(&env, &admin)?;
+        env.storage()
+            .instance()
+            .remove(&AdapterKey::Misreport(pool));
+        Ok(())
+    }
+
     /// Deterministic priced swap. Delivers `token_out` from own inventory.
     ///
     /// Minimum enforcement is intentionally LEFT to the router: this adapter
@@ -101,13 +126,18 @@ impl TestAdapter {
         let (num, denom): (i128, i128) = env
             .storage()
             .instance()
-            .get(&AdapterKey::Rate(pool))
+            .get(&AdapterKey::Rate(pool.clone()))
             .unwrap_or((1, 1)); // default: 1:1
         let out = checked_mul_div(amount_in, num, denom).ok_or(AdapterError::Failed)?;
         // Insufficient inventory traps in the token contract; the router maps
         // every adapter failure to `SwapFailed`.
         TokenClient::new(&env, &token_out).transfer(&me, &recipient, &out);
-        Ok(out)
+        // Delivery above is always honest; only the REPORT may lie.
+        Ok(env
+            .storage()
+            .instance()
+            .get(&AdapterKey::Misreport(pool))
+            .unwrap_or(out))
     }
 
     // -- private ----------------------------------------------------------

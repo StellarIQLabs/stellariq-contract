@@ -201,9 +201,12 @@ impl Router {
     /// Guarantees (each a reverted transaction on violation):
     /// * caller proved trader authorization for THESE exact arguments;
     /// * `deadline` not passed; amounts strictly positive with protection on;
-    /// * route non-empty, bounded, continuous, endpoints matching;
-    /// * every hop through a registered adapter, in order, each meeting its
-    ///   minimum; final output meeting the global minimum;
+    /// * route non-empty, bounded, continuous, endpoints matching, and every
+    ///   protocol registered (checked before any fund movement);
+    /// * every hop executed in order; each hop's DELIVERY verified on-chain
+    ///   via recipient balance delta — adapter return values are never
+    ///   trusted, only chained when covered by actual delivery;
+    /// * per-hop and global minimums enforced on verified amounts;
     /// * full settlement record in events for the `stellariq-data` indexer.
     #[allow(clippy::too_many_arguments)]
     pub fn swap(
@@ -247,6 +250,19 @@ impl Router {
         }
         validate_path(&token_in, &token_out, &path)?;
 
+        // Fail fast on unknown protocols BEFORE moving any funds, so
+        // misconfigured routes cost no token movement (only the tx fee).
+        for i in 0..hops {
+            let pre = path.get(i).ok_or(RouterError::EmptyPath)?;
+            if !env
+                .storage()
+                .persistent()
+                .has(&DataKey::Protocol(pre.protocol.clone()))
+            {
+                return Err(RouterError::ProtocolNotFound);
+            }
+        }
+
         // Deterministic pre-check so insufficient funds surface as a stable
         // error code instead of a raw token-contract trap.
         if TokenClient::new(&env, &token_in).balance(&trader) < amount_in {
@@ -277,7 +293,13 @@ impl Router {
             } else {
                 router.clone()
             };
-            let hop_out = AdapterClient::new(&env, &adapter)
+            // Delivery is VERIFIED on-chain, never trusted from the return
+            // value alone: measure the recipient's balance delta across the
+            // adapter call and chain the verified amount. A misreporting
+            // adapter (inflated return, short delivery) fails closed here.
+            let out_token = TokenClient::new(&env, &step.token_out);
+            let before = out_token.balance(&recipient);
+            let reported = AdapterClient::new(&env, &adapter)
                 .try_swap(
                     &step.pool,
                     &step.token_in,
@@ -288,12 +310,21 @@ impl Router {
                 )
                 .map_err(|_| RouterError::SwapFailed)?
                 .map_err(|_| RouterError::SwapFailed)?;
-            if hop_out <= 0 {
+            if reported <= 0 {
                 return Err(RouterError::SwapFailed);
             }
-            if hop_out < step.amount_out_min {
+            let delivered = out_token
+                .balance(&recipient)
+                .checked_sub(before)
+                .ok_or(RouterError::SwapFailed)?;
+            if delivered < reported {
+                // Adapter claimed more than it delivered: fail, don't chain.
+                return Err(RouterError::SwapFailed);
+            }
+            if delivered < step.amount_out_min {
                 return Err(RouterError::InsufficientOutput);
             }
+            let hop_out = delivered;
 
             HopExecuted {
                 execution_id: peek_nonce(&env)?,

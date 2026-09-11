@@ -178,7 +178,6 @@ fn illiquid_intermediate_venue_fails_safely() {
     assert_eq!(balance(&f.env, &f.token_a, &f.trader), 10_000);
     assert_eq!(balance(&f.env, &f.token_c, &f.trader), 0);
 }
-
 #[test]
 fn execution_does_not_depend_on_offchain_state() {
     // Same route executed twice yields identical results: no oracle, no
@@ -197,4 +196,62 @@ fn execution_does_not_depend_on_offchain_state() {
     assert_eq!(run(), 1_500);
     assert_eq!(run(), 1_500);
     assert_eq!(balance(&f.env, &f.token_b, &f.trader), 3_000);
+}
+
+// -- Delivery verification (security: never trust, always verify) ----------------
+
+#[test]
+fn inflated_report_fails_closed() {
+    let f = setup();
+    fund_single_hop(&f, 10_000, 10_000);
+    // Adapter delivers the honest 1:1 output (1000) but REPORTS 5000.
+    // The router must not chain the lie: fail, revert, trader keeps funds.
+    adapter(&f).set_misreport(&f.admin, &f.pool, &5_000);
+
+    let path = sorovec![&f.env, step(&f, &f.token_a, &f.token_b, 900)];
+    let res = router(&f).try_swap(
+        &f.trader, &f.token_a, &f.token_b, &1_000, &900, &DEADLINE, &path,
+    );
+    assert_eq!(res, Err(Ok(RouterError::SwapFailed)));
+    assert_eq!(balance(&f.env, &f.token_a, &f.trader), 10_000);
+    assert_eq!(balance(&f.env, &f.token_b, &f.trader), 0);
+}
+
+#[test]
+fn deflated_report_settles_on_verified_delivery() {
+    let f = setup();
+    fund_single_hop(&f, 10_000, 10_000);
+    // Adapter delivers 1000 but reports 100: the verified on-chain delta
+    // governs checks, chaining and events — never the claim.
+    adapter(&f).set_misreport(&f.admin, &f.pool, &100);
+
+    let path = sorovec![&f.env, step(&f, &f.token_a, &f.token_b, 900)];
+    let out = router(&f).swap(
+        &f.trader, &f.token_a, &f.token_b, &1_000, &900, &DEADLINE, &path,
+    );
+    assert_eq!(out, 1_000);
+    assert_eq!(balance(&f.env, &f.token_b, &f.trader), 1_000);
+}
+
+#[test]
+fn inflated_report_mid_route_fails_atomically() {
+    let f = setup();
+    mint(&f.env, &f.token_a, &f.trader, 10_000);
+    mint(&f.env, &f.token_b, &f.adapter_id, 20_000);
+    mint(&f.env, &f.token_c, &f.adapter_id, 20_000);
+    // First hop lies upward; without delivery verification the router would
+    // forward phantom funds into hop two.
+    adapter(&f).set_misreport(&f.admin, &f.pool, &50_000);
+
+    let path = sorovec![
+        &f.env,
+        step_on_pool(&f.pool, &f.token_a, &f.token_b, 900),
+        step_on_pool(&f.pool2, &f.token_b, &f.token_c, 900),
+    ];
+    let res = router(&f).try_swap(
+        &f.trader, &f.token_a, &f.token_c, &1_000, &900, &DEADLINE, &path,
+    );
+    assert_eq!(res, Err(Ok(RouterError::SwapFailed)));
+    assert_eq!(balance(&f.env, &f.token_a, &f.trader), 10_000);
+    assert_eq!(balance(&f.env, &f.token_c, &f.trader), 0);
 }

@@ -94,10 +94,13 @@ Considered and rejected for MVP:
 2. **Admin is trusted but constrained.** Admin can pause, manage the protocol
    registry, rotate admin, upgrade code. Admin CANNOT move user tokens, bypass
    `require_auth`, forge events, or change history.
-3. **Adapters are semi-trusted.** A malicious/mbuggy adapter can fail or misprice
-   a hop, but CANNOT steal trader funds beyond the hop input already forwarded:
-   trader output is protected by per-hop + global minimums, and failures roll back.
-   Registry-gating bounds the blast radius (unregister to contain).
+3. **Adapters are untrusted for reporting, trusted only for delivery.**
+   Every hop's delivery is verified on-chain via recipient balance deltas and
+   only verified amounts are chained; inflated reports fail closed
+   (`SwapFailed`) and any shortfall reverts the whole swap. A malicious
+   adapter can therefore only deny service (grief), never steal: no token
+   loss is possible, and registry removal contains the griefing. (Hardened
+   during the security review; proven by misreport tests.)
 4. **SEP-41 token contracts behave** (standard transfer semantics, no fee-on-transfer
    hooks that break accounting — see known limitations §7).
 5. **Ledger timestamp** is the time oracle for deadlines (Stellar-close-time based,
