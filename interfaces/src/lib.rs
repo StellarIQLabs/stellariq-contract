@@ -25,7 +25,9 @@
 //! `i128`, but every entrypoint rejects non-positive inputs before touching
 //! state. See [`RouterError`] for the stable error codes.
 
-use soroban_sdk::{contracterror, contractevent, contracttype, Address, BytesN, Symbol, Vec};
+use soroban_sdk::{
+    contractclient, contracterror, contractevent, contracttype, Address, BytesN, Env, Symbol, Vec,
+};
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -128,10 +130,12 @@ pub enum RouterError {
     InsufficientOutput = 12,
     /// Adapter returned a non-positive amount or otherwise failed.
     SwapFailed = 13,
-    /// Proposed admin address is invalid.
+    /// Proposed admin address is invalid (e.g. no-op rotation to self).
     InvalidAdmin = 14,
     /// Checked integer arithmetic would overflow.
     Overflow = 15,
+    /// Trader's balance of the input token is below `amount_in`.
+    InsufficientBalance = 16,
 }
 
 // ---------------------------------------------------------------------------
@@ -242,16 +246,54 @@ pub struct Upgraded {
 // Adapter interface contract
 // ---------------------------------------------------------------------------
 
+/// Failure modes of a protocol adapter's `swap`.
+///
+/// Adapters report failures with these codes; the router maps EVERY adapter
+/// failure to [`RouterError::SwapFailed`] (adapter error details never leak
+/// into router state, but they are visible in the transaction result for
+/// debugging). Discriminants are stable within this crate: never renumber.
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(u32)]
+pub enum AdapterError {
+    /// Adapter function called before its `initialize`.
+    NotInitialized = 1,
+    /// Caller is not the adapter's admin (management functions only).
+    NotAuthorized = 2,
+    /// Pricing configuration is invalid (e.g. non-positive denominator).
+    InvalidRate = 3,
+    /// Execution failed (injected fault, venue rejection, delivery failure).
+    Failed = 4,
+    /// Adapter `initialize` called more than once.
+    AlreadyInitialized = 5,
+}
+
 /// Narrow cross-contract interface every protocol adapter MUST implement.
 ///
 /// The router calls ONLY this entrypoint, ONLY on adapters resolved through
 /// the admin-managed protocol registry. There is intentionally no generic
-/// "call anything" path: `pool` is data, `recipient` receives `token_out`,
-/// and the returned `amount_out` is verified against `amount_out_min`.
+/// "call anything" path: `pool` is opaque data identifying the market inside
+/// the protocol, `recipient` receives exactly `token_out`, and the returned
+/// `amount_out` is verified against `amount_out_min` by the ROUTER (adapters
+/// report honestly; enforcement is the router's job so that the audited
+/// contract owns every financial guarantee).
 ///
 /// Adapters MUST be non-custodial beyond the forwarded hop input and MUST NOT
 /// require any authorization other than operating on their own balances.
-pub const ADAPTER_SWAP_FN: &str = "swap";
+/// `swap` itself takes NO admin/user address and performs NO `require_auth`:
+/// authentication happened once, up front, in the router.
+#[contractclient(name = "AdapterClient")]
+pub trait Adapter {
+    fn swap(
+        env: Env,
+        pool: Address,
+        token_in: Address,
+        token_out: Address,
+        amount_in: i128,
+        amount_out_min: i128,
+        recipient: Address,
+    ) -> Result<i128, AdapterError>;
+}
 
 // ---------------------------------------------------------------------------
 // Checked integer math (no floats, no silent overflow)
@@ -278,7 +320,7 @@ pub fn checked_mul_div(amount: i128, num: i128, denom: i128) -> Option<i128> {
 /// Pure helper for quote-side code and tests; the router itself enforces
 /// caller-supplied minimums rather than computing them.
 pub fn min_out_with_slippage(amount: i128, slippage_bps: i128) -> Option<i128> {
-    if slippage_bps < 0 || slippage_bps > BPS_DENOM {
+    if !(0..=BPS_DENOM).contains(&slippage_bps) {
         return None;
     }
     checked_mul_div(amount, BPS_DENOM - slippage_bps, BPS_DENOM)
@@ -347,11 +389,21 @@ mod tests {
         assert_eq!(RouterError::SwapFailed as u32, 13);
         assert_eq!(RouterError::InvalidAdmin as u32, 14);
         assert_eq!(RouterError::Overflow as u32, 15);
+        assert_eq!(RouterError::InsufficientBalance as u32, 16);
+    }
+
+    #[test]
+    fn adapter_error_discriminants_are_stable() {
+        assert_eq!(AdapterError::NotInitialized as u32, 1);
+        assert_eq!(AdapterError::NotAuthorized as u32, 2);
+        assert_eq!(AdapterError::InvalidRate as u32, 3);
+        assert_eq!(AdapterError::Failed as u32, 4);
+        assert_eq!(AdapterError::AlreadyInitialized as u32, 5);
     }
 
     #[test]
     fn bounds_are_sane() {
-        assert!(MAX_HOPS >= 1 && MAX_HOPS <= 10);
+        const { assert!(MAX_HOPS >= 1 && MAX_HOPS <= 10) };
         assert_eq!(BPS_DENOM, 10_000);
         assert_eq!(EVENT_SCHEMA_VERSION, 1);
     }

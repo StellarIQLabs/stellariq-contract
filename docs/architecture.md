@@ -162,6 +162,7 @@ Contract errors (`RouterError`, `#[contracterror]`, stable discriminants):
 | 13 | SwapFailed | adapter returned failure / non-positive output |
 | 14 | InvalidAdmin | zero/None admin address |
 | 15 | Overflow | checked-arithmetic violation |
+| 16 | InsufficientBalance | trader balance below `amount_in` (deterministic pre-check) |
 
 All financial failures are safe-fail (full rollback, no partial fills).
 
