@@ -279,3 +279,77 @@ fn lifecycle_events_carry_admin_and_config() {
         ]
     );
 }
+
+#[test]
+fn management_events_cover_admin_pause_and_removal() {
+    let f = setup();
+    let next = Address::generate(&f.env);
+
+    router(&f).set_admin(&next);
+    let mut adata = Map::<Symbol, Val>::new(&f.env);
+    adata.set(
+        Symbol::new(&f.env, "version"),
+        EVENT_SCHEMA_VERSION.into_val(&f.env),
+    );
+    assert_eq!(
+        router_events(&f),
+        sorovec![
+            &f.env,
+            (
+                f.router_id.clone(),
+                sorovec![
+                    &f.env,
+                    sym(&f.env, "admin_changed"),
+                    f.admin.clone().into_val(&f.env),
+                    next.clone().into_val(&f.env),
+                ],
+                adata.into_val(&f.env),
+            ),
+        ]
+    );
+
+    router(&f).set_paused(&true);
+    let mut paused_data = Map::<Symbol, Val>::new(&f.env);
+    paused_data.set(Symbol::new(&f.env, "paused"), true.into_val(&f.env));
+    paused_data.set(
+        Symbol::new(&f.env, "version"),
+        EVENT_SCHEMA_VERSION.into_val(&f.env),
+    );
+    assert_eq!(
+        router_events(&f),
+        sorovec![
+            &f.env,
+            (
+                f.router_id.clone(),
+                sorovec![
+                    &f.env,
+                    sym(&f.env, "pause_changed"),
+                    next.clone().into_val(&f.env),
+                ],
+                paused_data.into_val(&f.env),
+            ),
+        ]
+    );
+
+    router(&f).remove_protocol(&symbol_short!("test"));
+    let mut rdata = Map::<Symbol, Val>::new(&f.env);
+    rdata.set(
+        Symbol::new(&f.env, "version"),
+        EVENT_SCHEMA_VERSION.into_val(&f.env),
+    );
+    assert_eq!(
+        router_events(&f),
+        sorovec![
+            &f.env,
+            (
+                f.router_id.clone(),
+                sorovec![
+                    &f.env,
+                    sym(&f.env, "protocol_removed"),
+                    symbol_short!("test").into_val(&f.env),
+                ],
+                rdata.into_val(&f.env),
+            ),
+        ]
+    );
+}
