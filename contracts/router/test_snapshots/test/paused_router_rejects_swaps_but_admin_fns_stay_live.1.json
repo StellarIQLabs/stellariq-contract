@@ -1341,7 +1341,7 @@
                 "symbol": "hop_executed"
               },
               {
-                "u64": "0"
+                "u64": "1"
               }
             ],
             "data": {

@@ -28,6 +28,8 @@ mod test;
 #[cfg(test)]
 mod test_aggregation;
 #[cfg(test)]
+mod test_events;
+#[cfg(test)]
 mod test_security;
 
 /// Storage layout.
@@ -277,6 +279,9 @@ impl Router {
         let last = hops.checked_sub(1).ok_or(RouterError::EmptyPath)?;
         let mut protocols: Vec<Symbol> = Vec::new(&env);
         let mut hop_amount_in = amount_in;
+        // Allocate the execution id up front so hop records and the summary
+        // share one join key even though the summary is emitted last.
+        let execution_id = next_nonce(&env)?;
 
         for i in 0..hops {
             let step = path.get(i).ok_or(RouterError::EmptyPath)?;
@@ -329,7 +334,7 @@ impl Router {
             let hop_out = delivered;
 
             HopExecuted {
-                execution_id: peek_nonce(&env)?,
+                execution_id,
                 trader: trader.clone(),
                 hop_index: i,
                 protocol: step.protocol.clone(),
@@ -350,7 +355,6 @@ impl Router {
             return Err(RouterError::InsufficientOutput);
         }
 
-        let execution_id = next_nonce(&env)?;
         SwapExecuted {
             trader: trader.clone(),
             token_in: token_in.clone(),
