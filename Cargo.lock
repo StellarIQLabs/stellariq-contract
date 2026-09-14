@@ -1779,6 +1779,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "stellariq-example"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "stellariq-interfaces"
 version = "0.1.0"
 dependencies = [
