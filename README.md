@@ -4,6 +4,7 @@ On-chain execution layer for StellarIQ: a minimal, audited Soroban swap router
 with safe multi-hop execution, slippage/deadline protection, and
 indexer-friendly events.
 
+- **Deployed:** `CC277AA6E6WZIQRA4N45TQ3O6VV5MUSDMRZCNHO43QENMYXV6E5OVHSP` (testnet)
 - Architecture: [`docs/architecture.md`](docs/architecture.md)
 - App integration: [`docs/integration.md`](docs/integration.md) (Task 14)
 - Security review: [`docs/security-review.md`](docs/security-review.md) (Task 7)
