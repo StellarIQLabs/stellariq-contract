@@ -1,6 +1,6 @@
 #![no_std]
 
-//! StellarIQ swap router — the only deployed StellarIQ contract.
+//! StellarIQ swap router - the only deployed StellarIQ contract.
 //!
 //! Executes pre-computed multi-hop routes with strict on-chain guarantees:
 //! trader authorization, deadline enforcement, per-hop + global slippage
@@ -208,7 +208,7 @@ impl Router {
     /// * route non-empty, bounded, continuous, endpoints matching, and every
     ///   protocol registered (checked before any fund movement);
     /// * every hop executed in order; each hop's DELIVERY verified on-chain
-    ///   via recipient balance delta — adapter return values are never
+    ///   via recipient balance delta - adapter return values are never
     ///   trusted, only chained when covered by actual delivery;
     /// * per-hop and global minimums enforced on verified amounts;
     /// * full settlement record in events for the `stellariq-data` indexer.

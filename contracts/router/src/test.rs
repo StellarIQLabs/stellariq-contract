@@ -2,7 +2,7 @@
 
 //! Core router tests: lifecycle, authorization, registry, single-hop
 //! execution and every validation failure. Multi-hop aggregation scenarios
-//! live in `test_aggregation.rs`; security/event coverage lands in Tasks 7–9.
+//! live in `test_aggregation.rs`; security/event coverage lands in Tasks 7-9.
 
 use super::fixture::*;
 use super::*;

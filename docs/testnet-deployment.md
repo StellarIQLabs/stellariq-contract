@@ -19,7 +19,7 @@
 | Configuration | unpaused, empty protocol registry (adapters registered per integration) |
 
 NOTE: verify on [stellar.expert/testnet](https://stellar.expert/explorer/testnet)
-via the deploy-tx hash or contract ID — the contract ID + init event are the
+via the deploy-tx hash or contract ID - the contract ID + init event are the
 primary references.
 
 Canonical machine-readable record: `deployments/testnet-router.json`.
@@ -46,7 +46,7 @@ Canonical machine-readable record: `deployments/testnet-router.json`.
   including atomicity and delivery-verification cases.
 - A live testnet `swap` additionally requires a REGISTERED protocol adapter
   backed by funded testnet liquidity. No production adapters exist yet (see
-  Remaining Work) — so no live swap was executed. The registry is empty by
+  Remaining Work) - so no live swap was executed. The registry is empty by
   design; any swap attempt today fails safely with `ProtocolNotFound`.
 - Interact read-only any time:
   `stellar contract invoke --id CC277AA6E6WZIQRA4N45TQ3O6VV5MUSDMRZCNHO43QENMYXV6E5OVHSP --source-account <any-testnet-identity> --network testnet -- version`

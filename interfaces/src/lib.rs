@@ -60,7 +60,7 @@ pub const EVENT_SCHEMA_VERSION: u32 = 1;
 /// output. The router enforces this; discontinuous routes fail safely.
 ///
 /// `protocol` is a registry key (e.g. `"soroswap"`, `"phoenix"`, `"test"`),
-/// NEVER a raw executable address — the router resolves it to an adapter
+/// NEVER a raw executable address - the router resolves it to an adapter
 /// registered by admin. `pool` identifies the market inside that protocol and
 /// is opaque to the router (forwarded to the adapter + recorded in events).
 #[contracttype]
@@ -95,7 +95,7 @@ pub struct SwapParams {
 }
 
 // ---------------------------------------------------------------------------
-// Errors (stable discriminants — NEVER renumber, only append)
+// Errors (stable discriminants - NEVER renumber, only append)
 // ---------------------------------------------------------------------------
 
 /// Router failure modes. Every financial failure rolls back atomically.
@@ -139,7 +139,7 @@ pub enum RouterError {
 }
 
 // ---------------------------------------------------------------------------
-// Events (schema v1 — see EVENT_SCHEMA_VERSION)
+// Events (schema v1 - see EVENT_SCHEMA_VERSION)
 // ---------------------------------------------------------------------------
 
 /// Full settlement record for one swap. This is the PRIMARY indexer input:

@@ -181,7 +181,7 @@ fn illiquid_intermediate_venue_fails_safely() {
 #[test]
 fn execution_does_not_depend_on_offchain_state() {
     // Same route executed twice yields identical results: no oracle, no
-    // API, no hidden input — only stored rates and on-chain balances.
+    // API, no hidden input - only stored rates and on-chain balances.
     let f = setup();
     adapter(&f).set_rate(&f.admin, &f.pool, &3, &2);
     mint(&f.env, &f.token_a, &f.trader, 10_000);
@@ -222,7 +222,7 @@ fn deflated_report_settles_on_verified_delivery() {
     let f = setup();
     fund_single_hop(&f, 10_000, 10_000);
     // Adapter delivers 1000 but reports 100: the verified on-chain delta
-    // governs checks, chaining and events — never the claim.
+    // governs checks, chaining and events - never the claim.
     adapter(&f).set_misreport(&f.admin, &f.pool, &100);
 
     let path = sorovec![&f.env, step(&f, &f.token_a, &f.token_b, 900)];

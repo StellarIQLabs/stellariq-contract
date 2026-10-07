@@ -1,10 +1,10 @@
-# StellarIQ Contract Events — Indexer Contract (`stellariq-data`)
+# StellarIQ Contract Events - Indexer Contract (`stellariq-data`)
 
 All event schemas are defined in code in `interfaces/src/lib.rs` (the single
 source of truth) and pinned by exact-match tests in
 `contracts/router/src/test_events.rs`. This document is the human/operator
 reading guide for the indexer team. If this doc and the code ever disagree,
-THE CODE WINS — then fix this doc.
+THE CODE WINS - then fix this doc.
 
 - Schema version: `EVENT_SCHEMA_VERSION = 1` (every event carries `version: u32`).
 - Event names are the `snake_case` struct names, emitted as the FIRST topic.
@@ -12,10 +12,10 @@ THE CODE WINS — then fix this doc.
 - Amounts are raw `i128` smallest-unit integers. No floats, no decimals metadata
   (resolve decimals per token contract off-chain).
 - Failed transactions emit NOTHING (host rolls back events with state).
-- No sensitive data in events: addresses and amounts only — no keys, no memos,
+- No sensitive data in events: addresses and amounts only - no keys, no memos,
   no off-chain identifiers.
 
-## `swap_executed` — the primary settlement record
+## `swap_executed` - the primary settlement record
 
 One per successful `swap`. Everything needed to reconstruct swap activity:
 
@@ -30,7 +30,7 @@ One per successful `swap`. Everything needed to reconstruct swap activity:
 | data | `ledger` | u32 | ledger sequence (timestamp via ledger header) |
 | data | `version` | u32 | schema version (1) |
 
-## `hop_executed` — per-hop leg records
+## `hop_executed` - per-hop leg records
 
 One per hop, in order (`hop_index` 0..n), emitted BEFORE the summary:
 
@@ -48,7 +48,7 @@ One per hop, in order (`hop_index` 0..n), emitted BEFORE the summary:
 Join rule: `hop_executed[topic execution_id] == swap_executed[data execution_id]`
 AND same contract id AND same ledger. Both are emitted by the same contract in
 the same transaction, so grouping by `(contract_id, ledger, execution_id)` is
-exact. `execution_id` is allocated once per swap and shared by all its hops —
+exact. `execution_id` is allocated once per swap and shared by all its hops -
 regression-tested (`swap_emits_joinable_hop_and_summary`).
 
 ## Lifecycle events (governance audit trail)
@@ -60,7 +60,7 @@ regression-tested (`swap_emits_joinable_hop_and_summary`).
 | `paused` / `unpaused` | see below | `{admin, paused, version}` | `set_paused` |
 
 NOTE: the pause event is named `pause_changed` (struct `PauseChanged`), with
-`paused: bool` in data telling the direction — do NOT filter on two names.
+`paused: bool` in data telling the direction - do NOT filter on two names.
 
 | Event | Topics | Data | Emitted by |
 |---|---|---|---|
@@ -76,7 +76,7 @@ NOTE: the pause event is named `pause_changed` (struct `PauseChanged`), with
    `(contract_id, ledger, execution_id)`.
 3. Sanity-check each swap: `len(hops) == len(protocols)`, hop chaining
    (`hops[i].token_out == hops[i+1].token_in`), first/last endpoints match the
-   summary, `hop_index` dense from 0. Mismatches indicate a schema change —
+   summary, `hop_index` dense from 0. Mismatches indicate a schema change -
    alert, don't silently coerce.
 4. Track lifecycle events for the ops dashboard (admin changes, pauses,
    protocol registry changes, upgrades invalidate cached specs).
@@ -103,5 +103,5 @@ data:   { trader: GTRADER, hop_index: 0, protocol: "test", pool: CPOOL...,
 
 - v1 (2026-09-11, router 0.1.0): initial schema. `execution_id` allocated once
   per swap and shared by hops + summary (fixed pre-release: an early build
-  used the pre-increment nonce for hops and post-increment for the summary —
+  used the pre-increment nonce for hops and post-increment for the summary -
   caught by exact-match event tests before any deployment).

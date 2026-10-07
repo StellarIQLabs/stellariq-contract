@@ -140,7 +140,7 @@ fn swap_with_wrong_trader_auth_fails() {
     assert!(!matches!(res, Err(Ok(_))));
 
     // Positive control: the SAME args with the TRADER's authorization (plus
-    // the nested token-transfer authorization) succeed — proving the failure
+    // the nested token-transfer authorization) succeed - proving the failure
     // above was the missing signature, not malformed args or mocks.
     f.env.mock_auths(&[MockAuth {
         address: &f.trader,

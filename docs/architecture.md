@@ -1,4 +1,4 @@
-# StellarIQ Contract Architecture (v0.1 — MVP)
+# StellarIQ Contract Architecture (v0.1 - MVP)
 
 Status: accepted for initial testnet release.
 Scope: intentionally minimal. One deployed contract. No separate aggregator.
@@ -28,7 +28,7 @@ Responsibility split (non-negotiable):
 
 | Concern | Owner | Rationale |
 |---|---|---|
-| Route discovery, ranking, quotes | `stellariq-data` (off-chain) | Requires market data, simulations, floating point — unsuitable for deterministic contracts |
+| Route discovery, ranking, quotes | `stellariq-data` (off-chain) | Requires market data, simulations, floating point - unsuitable for deterministic contracts |
 | Safe on-chain execution | `stellariq-contracts` (this repo) | Must be trust-minimized and atomic |
 | Signing, tx construction | `stellariq-app` + user wallet | Private keys never touch contracts or backend |
 | Settlement accounting, event log | Soroban contracts | Deterministic, auditable |
@@ -39,7 +39,7 @@ is fully self-contained on Stellar.
 
 ## 2. Contracts
 
-### 2.1 Router (`contracts/router`) — the only deployed contract
+### 2.1 Router (`contracts/router`) - the only deployed contract
 
 Single entry point for all swaps. Responsibilities:
 
@@ -102,7 +102,7 @@ Considered and rejected for MVP:
    loss is possible, and registry removal contains the griefing. (Hardened
    during the security review; proven by misreport tests.)
 4. **SEP-41 token contracts behave** (standard transfer semantics, no fee-on-transfer
-   hooks that break accounting — see known limitations §7).
+   hooks that break accounting - see known limitations §7).
 5. **Ledger timestamp** is the time oracle for deadlines (Stellar-close-time based,
    coarse but manipulation-resistant for swap-scale windows).
 
@@ -136,13 +136,13 @@ Considered and rejected for MVP:
 
 ## 7. Authorization model
 
-- `swap`: `trader.require_auth()` — the trader signs the exact route + minimums.
+- `swap`: `trader.require_auth()` - the trader signs the exact route + minimums.
 - Admin fns: `admin.require_auth()` (current admin, read from storage).
 - Token movement trader→router: SEP-41 `transfer` invoked by the router; auth
   propagates from the trader's top-level signature (standard Soroban auth).
 - Router→adapter forwarding and adapter→recipient delivery: contracts acting on
   their own balances need no user signature (Soroban "current contract" auth).
-- No allowances required from users (`approve` never needed — safer UX).
+- No allowances required from users (`approve` never needed - safer UX).
 
 ## 8. Error model
 

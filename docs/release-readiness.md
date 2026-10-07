@@ -1,4 +1,4 @@
-# Release Readiness — v0.1.0 testnet (2026-09-11)
+# Release Readiness - v0.1.0 testnet (2026-09-11)
 
 Fresh full-repo audit against the v0.1 architecture (`docs/architecture.md`).
 
@@ -19,19 +19,19 @@ Integration documentation: PASS
 - Duplicate code: none (shared fixture + interfaces crates; no copy-paste).
 - Unused dependencies: none (every `[dependencies]`/`[dev-dependencies]`
   entry is imported).
-- Missing tests: found 1 gap — `AdminChanged`/`PauseChanged`/
+- Missing tests: found 1 gap - `AdminChanged`/`PauseChanged`/
   `ProtocolRemoved` had no exact-match event tests. FIXED
   (`management_events_cover_admin_pause_and_removal`). Only `Upgraded`
   remains untested by unit test (it replaces live code by definition;
   covered by the unauthorized-upgrade negative + live read-only checks).
-- Broken documentation: none — every `docs/*.md` cross-reference resolves;
+- Broken documentation: none - every `docs/*.md` cross-reference resolves;
   code-vs-doc disagreements found during the build (error code 16,
   execution-id allocation, `version()` type) were fixed in code AND docs.
 - Hard-coded addresses/secrets: none in Rust (grep-verified); addresses
   appear only in `docs/` + `deployments/` metadata, as intended.
 - Debug code / TODOs / `println!` / `dbg!`: none.
 - Unsafe assumptions: fee-on-transfer tokens, venue honesty beyond delivery,
-  coarse timestamps — all documented in `docs/security-review.md`.
+  coarse timestamps - all documented in `docs/security-review.md`.
 - Inconsistent naming: none (Router/Adapter/SwapStep/RouterError uniform).
 - Network config: testnet default, mainnet hard-refused without
   `--confirm-mainnet`; no mainnet deployment performed.
@@ -58,4 +58,4 @@ Integration documentation: PASS
 
 Mainnet deployment, external security audit, production DEX adapters, protocol
 fees, token allowlist, upgrade timelock, fee-on-transfer support. See final
-report / docs/security-review.md §4–5.
+report / docs/security-review.md §4-5.
