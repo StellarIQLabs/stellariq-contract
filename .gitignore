@@ -6,7 +6,7 @@ target/
 # Compiled contract artifacts committed only via release flow, never ad-hoc
 *.wasm
 
-# Stellar CLI / key material — NEVER commit secrets
+# Stellar CLI / key material - NEVER commit secrets
 .stellar/
 *.pem
 *.key
