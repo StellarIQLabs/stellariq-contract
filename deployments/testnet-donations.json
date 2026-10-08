@@ -1,0 +1,13 @@
+{
+  "network": "testnet",
+  "contract": "donations",
+  "contractId": "CBCHKIDRFJ4KO2DGJEP75NJPYN65YVD6QOVVHC5IU7PRTHGHW75OF2KX",
+  "wasmSha256": "9f956833e845a85d6bd9e4278854e8f7d24d3de8642a879d5ef816fdefe08fd4",
+  "deployedAt": "2026-10-08T19:25:50Z",
+  "commit": "b06330d5bb1de361dd48b56426cfc2ef83c5eaf5",
+  "version": "0.1.0",
+  "admin": "GBM6MLCWZJ3ZFNVUKNOIL5Q2TNWDERK6QA4AHQPYLVS27D4MBRQE7BJJ",
+  "acceptedToken": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+  "acceptedTokenNote": "native XLM Stellar Asset Contract on testnet",
+  "deployerIdentity": "stellariq-give-admin"
+}
