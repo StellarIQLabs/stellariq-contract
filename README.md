@@ -4,6 +4,8 @@ Soroban smart contracts for **StellarIQ Give**: transparent charity
 donations on Stellar. Donors give in any Stellar asset, charities receive the
 token they asked for, and every donation leaves a public on-chain receipt.
 
+**Live demo:** https://stellariq-web.vercel.app (testnet) | **API:** https://stellariq-api-p1hz.onrender.com/docs
+
 | Contract | Purpose | Testnet |
 |---|---|---|
 | `donations` | Charity campaigns, direct-to-beneficiary donations, receipts | [`CBCHKIDR...F2KX`](https://stellar.expert/explorer/testnet/contract/CBCHKIDRFJ4KO2DGJEP75NJPYN65YVD6QOVVHC5IU7PRTHGHW75OF2KX) |
