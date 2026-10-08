@@ -1,19 +1,25 @@
-# StellarIQ Contracts (`stellariq-contracts`)
+# StellarIQ Contracts
 
-On-chain execution layer for StellarIQ: a minimal, audited Soroban swap router
-with safe multi-hop execution, slippage/deadline protection, and
-indexer-friendly events.
+Soroban smart contracts for **StellarIQ Give**: transparent charity
+donations on Stellar. Donors give in any Stellar asset, charities receive the
+token they asked for, and every donation leaves a public on-chain receipt.
 
-- **Deployed:** `CC277AA6E6WZIQRA4N45TQ3O6VV5MUSDMRZCNHO43QENMYXV6E5OVHSP` (testnet)
+| Contract | Purpose | Testnet |
+|---|---|---|
+| `donations` | Charity campaigns, direct-to-beneficiary donations, receipts | [`CBCHKIDR...F2KX`](https://stellar.expert/explorer/testnet/contract/CBCHKIDRFJ4KO2DGJEP75NJPYN65YVD6QOVVHC5IU7PRTHGHW75OF2KX) |
+| `router` | Multi-hop swap router that converts a donor's asset into the campaign token | [`CC277AA6...VHSP`](https://stellar.expert/explorer/testnet/contract/CC277AA6E6WZIQRA4N45TQ3O6VV5MUSDMRZCNHO43QENMYXV6E5OVHSP) |
+
+- Donations: [`docs/donations.md`](docs/donations.md)
 - Architecture: [`docs/architecture.md`](docs/architecture.md)
-- App integration: [`docs/integration.md`](docs/integration.md) (Task 14)
-- Security review: [`docs/security-review.md`](docs/security-review.md) (Task 7)
-- Testnet deployment: [`docs/testnet-deployment.md`](docs/testnet-deployment.md) (Task 13)
+- App integration: [`docs/integration.md`](docs/integration.md)
+- Security review: [`docs/security-review.md`](docs/security-review.md)
+- Testnet deployment: [`docs/testnet-deployment.md`](docs/testnet-deployment.md)
 
 ## Layout
 
 ```
-contracts/router/        # the only deployed contract: swap router
+contracts/donations/     # charity campaigns and donation receipts
+contracts/router/        # swap router used to convert donations
 contracts/test-adapter/  # TEST-ONLY protocol adapter (never deployed)
 interfaces/              # shared contract types (assets, routes, errors, events)
 scripts/                 # deployment / verification tooling (Task 10)
